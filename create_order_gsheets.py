@@ -1,17 +1,20 @@
 
+# !pip install gspread oauth2client
+
+# !pip install pyyaml
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import re
 import pandas as pd
 import numpy as np
+import random
 import yaml
 import logging
 import warnings
 warnings.filterwarnings('ignore')
 
 import os
-
-
 
 def same_as_data(userinput,usrname, email, mobile, useradd):
     
@@ -46,7 +49,7 @@ def same_as_data(userinput,usrname, email, mobile, useradd):
         
         else:
             item_list1.append(user_list[i])
-    return item_list1, item_list2 
+    return item_list1, item_list2
 
 def check(item_lst1, item_lst2):
     name_list=[]
@@ -59,7 +62,7 @@ def check(item_lst1, item_lst2):
             name=element[:index]
             name_list.append(name) #appending name in list
             quant_unit=value
-            value=re.findall(r'\d*[\d\,\.\/]',quant_unit)[0] #(.*\d)Last digit eg:500gm
+            value=re.findall(r'\d*[\d\-\.\/]\d*',quant_unit)[0] #(.*\d)Last digit eg:500gm
             ind=quant_unit.find(value)+len(value)
             quant_list1.append(quant_unit[:ind])
             unit_list1.append(quant_unit[ind:])
@@ -92,7 +95,7 @@ def check(item_lst1, item_lst2):
     quant_list2 = []
     unit_list2 = []
     for element in item2:
-        data=re.findall(r'\d*[\d\,\.\/]', element)[0]
+        data=re.findall(r'\d*[\d\-\.\/]\d*', element)[0]
         quant_list2.append(data)
         indes = element.find(data)+len(data)
         quant_units = element[indes:]
@@ -119,14 +122,15 @@ def check(item_lst1, item_lst2):
     total_unit=unit_list1+unit_list2
     return (total_name, total_quant, total_unit)
 
-
 def create_df(a,b,c):
     df = pd.DataFrame(zip(a, b,c),columns =['ProductName', 'Quantity','Unit of measure'])
     df['ProductName'] = df['ProductName'].str.replace('[#,@,&,' ',-]', '')
     df['ProductName'] = df['ProductName'].str.strip()
     df['Quantity'] = df['Quantity'].str.strip()
     df['Unit of measure'] = df['Unit of measure'].str.strip()
-    df['Order Number'] = np.random.randint(11111, 99999)
+    
+    random_lst = [i for i in range(11111,99999)]
+    df['Order Number'] = random.choice(random_lst)
     df['User Name'] = ''
     df['Email ID']=''
     df['Mobile No']=''
@@ -138,6 +142,7 @@ def create_df(a,b,c):
 
     df['Order Line Number']=x 
     df['Error'] = ""
+
     return df
 
 def enterUserInfo(df,usrname, email, mobile, useradd):
@@ -149,24 +154,21 @@ def enterUserInfo(df,usrname, email, mobile, useradd):
         df.loc[0,['User Address']]=useradd
     else:
         df.loc[0,['Error']] = 'Address not found'
+
     return df
-
-
-
 
 def open_yml_file():
     
     #dir_path = os.path.dirname(os.path.realpath(__file__))
     #r'/workchat/grocery/data/nlulookups.yml'
     #print(dir_path)
-    with open('/home/devendra/Music/grocery-main/data/nlulookups.yml') as file:
+    with open(os.getcwd() + '/drive/MyDrive/Freshmart/Yml files/devendra.yml') as file:
         try:
             yml_data=yaml.load(file)
         except yaml.YAMLError as exc:
             print('yml file not found')
         return yml_data
-    
-    
+
 def get_product_data():
     data=open_yml_file()
     for i,k in enumerate(data['nlu']):
@@ -185,7 +187,7 @@ def product_check(data):
     df=data
     prodname = df['ProductName'].str.lower()
     uom = df['Unit of measure'].str.lower()
-    
+
     try:
         flag=0
         for i in (prodname):
@@ -204,13 +206,11 @@ def product_check(data):
         print('DataFrame Empty')
     return 0
 
-
-
 def authorize_GoogleSheet():
     # Authorize google sheet
     try:
         scope=['https://www.googleapis.com/auth/drive', 'https://spreadsheets.google.com/feeds']
-        credsfile = '/home/devendra/Music/grocery-main/actions/anydesk_6.1.0-1_amd64.deb/chatsheetsapi-e10d830e42a5.json'
+        credsfile = os.getcwd() + '/drive/MyDrive/Freshmart/chatsheetsapi-e10d830e42a5.json'
         cred=ServiceAccountCredentials.from_json_keyfile_name(credsfile, scope)
         gc=gspread.authorize(cred)
     except:
@@ -221,12 +221,11 @@ def authorize_GoogleSheet():
         sh = gc.open('OrderManagement')  
         # worksheet = sh.get_worksheet(2)
         wks=sh.worksheet("Orders")
-        # print(wks)
+        
     except:
         print('Did not find Google Sheet')
     
     return wks
-
 
 def insert_data_in_sheet(data):
     wks = authorize_GoogleSheet()
@@ -246,9 +245,6 @@ def insert_data_in_sheet(data):
         wks.insert_row(new_data, indx+l)
     return df['Order Number'][0]
 
-
-
-
 def processorder(user_input,Username,EmailId,MobileNo,UserAddress):
     data, usrname, email, mobile, useradd = user_input, Username, EmailId, MobileNo, UserAddress
     x,y = same_as_data(data,usrname, email, mobile, useradd)
@@ -257,14 +253,23 @@ def processorder(user_input,Username,EmailId,MobileNo,UserAddress):
     df2 = enterUserInfo(df,usrname, email, mobile, useradd)
     product_check(df2)
     orderNum = insert_data_in_sheet(df2)
-    # insert_data_in_UserSheet(usrname, email, mobile, useradd)
     
     return orderNum
 
-user_input = input("input")
-aa = input("name")
-bb = input("email")
-cc = input("mob")
-dd = input("add")
-processorder(user_input,aa,bb,cc,dd)
+
+processorder(user_input,a,b,c,d)
+
+
+
+user_input = input()
+a=input("name")
+b=input("email")
+c=input("mobile")
+d=input("add")
+
+
+
+
+
+
 
