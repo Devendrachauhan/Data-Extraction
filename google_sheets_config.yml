@@ -1,0 +1,50 @@
+sheet_ID : "OrderManagement"
+tab_name  : ["Product List and Pricing","Users"]
+
+ItemCategory :
+    lookup : "Category"
+    type : "APPEND"
+  
+Item : 
+    lookup: "TITTLE"
+    type : "APPEND"
+
+ItemAlternate : 
+    lookup : "Alternative Names"
+    type : "APPEND"
+
+ItemBrand :
+    lookup : "Source/Brand"
+    type : "APPEND"
+
+UnitofMeasure :
+    lookup : "UON"
+    type : "APPEND"
+
+UserName: 
+    lookup : "UserName"
+    type : "APPEND"
+
+UserEmail: 
+    lookup : "UserEmail"
+    type : "APPEND"
+
+UserPhone: 
+    lookup : "UserPhone"
+    type : "APPEND"
+
+UserCity: 
+    lookup : "UserCity"
+    type : "APPEND"
+
+UserAddress: 
+    lookup : "UserAddress"
+    type : "APPEND"
+
+UserFirstName: 
+    lookup : "UserFirstName"
+    type : "APPEND"
+
+UserLastName: 
+    lookup : "UserLastName"
+    type : "APPEND"
